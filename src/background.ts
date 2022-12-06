@@ -11,7 +11,45 @@ updateTabCountBadge();
 
 ////////////////////////////////
 
-async function groupClickedGoogleSearchResultTabs(tab: chrome.tabs.Tab) {
+type UrlParsingResult = { isMatch: false; searchedText: undefined } | { isMatch: true; searchedText: string };
+
+function parseGoogleSearchUrl(url: string, loggingContext: Object): UrlParsingResult {
+  const isFromGoogleSearch = url.startsWith("https://www.google.com/search?q=");
+
+  if (!isFromGoogleSearch) return { isMatch: false, searchedText: undefined };
+
+  const searchedText = new URL(url).searchParams.get("q") ?? "";
+
+  if (!searchedText) console.warn("Failed to parse the searched text from the google search query", { url, ...loggingContext });
+
+  return { isMatch: true, searchedText };
+}
+
+function parseYoutubeSearchUrl(url: string, loggingContext: Object): UrlParsingResult {
+  const isFromGoogleSearch = url.startsWith("https://www.youtube.com/results?search_query=");
+
+  if (!isFromGoogleSearch) return { isMatch: false, searchedText: undefined };
+
+  const searchedText = new URL(url).searchParams.get("search_query") ?? "";
+
+  if (!searchedText) console.warn("Failed to parse the searched text from the youtube search query", { url, ...loggingContext });
+
+  return { isMatch: true, searchedText };
+}
+
+const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl];
+
+function tryAllUrlParsers(url: string, loggingContext: Object): UrlParsingResult {
+  for (const urlParser of urlParsers) {
+    const { isMatch, searchedText } = urlParser(url, loggingContext);
+
+    if (isMatch) return { isMatch, searchedText };
+  }
+
+  return { isMatch: false, searchedText: undefined };
+}
+
+async function groupClickedSearchResultTabs(tab: chrome.tabs.Tab) {
   console.log("New tab opened", { tab });
 
   if (!tab.id || tab.id === chrome.tabs.TAB_ID_NONE) {
@@ -28,9 +66,11 @@ async function groupClickedGoogleSearchResultTabs(tab: chrome.tabs.Tab) {
 
   const openerTab = await chrome.tabs.get(openerTabId);
 
-  const isFromGoogleSearch = openerTab.url?.startsWith("https://www.google.com/search?q=");
+  if (!openerTab.url) return;
 
-  if (!isFromGoogleSearch) return;
+  const { isMatch, searchedText } = tryAllUrlParsers(openerTab.url, { openerTab });
+
+  if (!isMatch) return;
 
   const openerInTabGroupAlready = openerTab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE;
 
@@ -38,16 +78,13 @@ async function groupClickedGoogleSearchResultTabs(tab: chrome.tabs.Tab) {
     await chrome.tabs.group({ groupId: openerTab.groupId, tabIds: [tab.id] });
   } else {
     const newTabGroupId = await chrome.tabs.group({ tabIds: [tab.id, openerTabId] });
-    const newTabGroupName = new URL(openerTab.url!).searchParams.get("q") ?? "";
-
-    if (!newTabGroupName)
-      console.warn("Failed to parse the new tabGroup name from the google search query", { openerTab, url: openerTab.url });
+    const newTabGroupName = searchedText;
 
     chrome.tabGroups.update(newTabGroupId, { title: newTabGroupName });
   }
 }
 
-chrome.tabs.onCreated.addListener(groupClickedGoogleSearchResultTabs);
+chrome.tabs.onCreated.addListener(groupClickedSearchResultTabs);
 
 ////////////////////////////////
 
