@@ -6,24 +6,18 @@ async function updateTabCountBadge() {
 chrome.tabs.onCreated.addListener(updateTabCountBadge);
 chrome.tabs.onRemoved.addListener(updateTabCountBadge);
 updateTabCountBadge();
-function parseGoogleSearchUrl(url, loggingContext) {
-    const isFromGoogleSearch = url.startsWith("https://www.google.com/search?q=");
-    if (!isFromGoogleSearch)
+function parseUrlByStartAndSearchParam(urlStart, searchParamName, url, loggingContext) {
+    const searchParams = new URL(url).searchParams;
+    const wasSearchPageDetected = url.startsWith(urlStart) && searchParams.has(searchParamName);
+    if (!wasSearchPageDetected)
         return { isMatch: false, searchedText: undefined };
-    const searchedText = new URL(url).searchParams.get("q") ?? "";
+    const searchedText = searchParams.get(searchParamName) ?? "";
     if (!searchedText)
-        console.warn("Failed to parse the searched text from the google search query", { url, ...loggingContext });
+        console.warn("Failed to parse the searched text from the search query", { url, ...loggingContext });
     return { isMatch: true, searchedText };
 }
-function parseYoutubeSearchUrl(url, loggingContext) {
-    const isFromGoogleSearch = url.startsWith("https://www.youtube.com/results?search_query=");
-    if (!isFromGoogleSearch)
-        return { isMatch: false, searchedText: undefined };
-    const searchedText = new URL(url).searchParams.get("search_query") ?? "";
-    if (!searchedText)
-        console.warn("Failed to parse the searched text from the youtube search query", { url, ...loggingContext });
-    return { isMatch: true, searchedText };
-}
+const parseGoogleSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.google.com/search?q=", "q", url, loggingContext);
+const parseYoutubeSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.youtube.com/results?search_query=", "search_query", url, loggingContext);
 const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl];
 function tryAllUrlParsers(url, loggingContext) {
     for (const urlParser of urlParsers) {

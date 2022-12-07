@@ -12,30 +12,26 @@ updateTabCountBadge();
 ////////////////////////////////
 
 type UrlParsingResult = { isMatch: false; searchedText: undefined } | { isMatch: true; searchedText: string };
+type UrlParsingFunction = (url: string, loggingContext: Object) => UrlParsingResult;
 
-function parseGoogleSearchUrl(url: string, loggingContext: Object): UrlParsingResult {
-  const isFromGoogleSearch = url.startsWith("https://www.google.com/search?q=");
+function parseUrlByStartAndSearchParam(urlStart: string, searchParamName: string, url: string, loggingContext: Object): UrlParsingResult {
+  const searchParams = new URL(url).searchParams;
+  const wasSearchPageDetected = url.startsWith(urlStart) && searchParams.has(searchParamName);
 
-  if (!isFromGoogleSearch) return { isMatch: false, searchedText: undefined };
+  if (!wasSearchPageDetected) return { isMatch: false, searchedText: undefined };
 
-  const searchedText = new URL(url).searchParams.get("q") ?? "";
+  const searchedText = searchParams.get(searchParamName) ?? "";
 
-  if (!searchedText) console.warn("Failed to parse the searched text from the google search query", { url, ...loggingContext });
-
-  return { isMatch: true, searchedText };
-}
-
-function parseYoutubeSearchUrl(url: string, loggingContext: Object): UrlParsingResult {
-  const isFromGoogleSearch = url.startsWith("https://www.youtube.com/results?search_query=");
-
-  if (!isFromGoogleSearch) return { isMatch: false, searchedText: undefined };
-
-  const searchedText = new URL(url).searchParams.get("search_query") ?? "";
-
-  if (!searchedText) console.warn("Failed to parse the searched text from the youtube search query", { url, ...loggingContext });
+  if (!searchedText) console.warn("Failed to parse the searched text from the search query", { url, ...loggingContext });
 
   return { isMatch: true, searchedText };
 }
+
+const parseGoogleSearchUrl: UrlParsingFunction = (url, loggingContext) =>
+  parseUrlByStartAndSearchParam("https://www.google.com/search?q=", "q", url, loggingContext);
+
+const parseYoutubeSearchUrl: UrlParsingFunction = (url, loggingContext) =>
+  parseUrlByStartAndSearchParam("https://www.youtube.com/results?search_query=", "search_query", url, loggingContext);
 
 const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl];
 
