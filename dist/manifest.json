@@ -15,7 +15,7 @@
   },
   "commands": {
     "create-tabGroup": {
-      "suggested_key": "Ctrl+G",
+      "suggested_key": "Alt+T",
       "description": "Creates a new tab within a new tabGroup"
     }
   }
