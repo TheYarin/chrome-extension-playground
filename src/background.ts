@@ -36,7 +36,10 @@ const parseYoutubeSearchUrl: UrlParsingFunction = (url, loggingContext) =>
 const parseAliExpressSearchUrl: UrlParsingFunction = (url, loggingContext) =>
   parseUrlByStartAndSearchParam("https://www.aliexpress.com/wholesale?", "SearchText", url, loggingContext);
 
-const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl, parseAliExpressSearchUrl];
+const parseAmazonSearchUrl: UrlParsingFunction = (url, loggingContext) =>
+  parseUrlByStartAndSearchParam("https://www.amazon.com/s?", "k", url, loggingContext);
+
+const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl, parseAliExpressSearchUrl, parseAmazonSearchUrl];
 
 function tryAllUrlParsers(url: string, loggingContext: Object): UrlParsingResult {
   for (const urlParser of urlParsers) {
