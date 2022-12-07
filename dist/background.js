@@ -67,10 +67,26 @@ async function createNewGroup() {
     }
     await chrome.tabs.group({ tabIds: [newTab.id] });
 }
+////////////////////////////////
+async function closeCurrentGroup() {
+    const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!currentTab)
+        return;
+    if (!currentTab.groupId || currentTab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE)
+        return;
+    const tabsInTheSameGroup = await chrome.tabs.query({ groupId: currentTab.groupId });
+    const idsOfTabsToRemove = tabsInTheSameGroup
+        .map((tab) => tab.id)
+        .filter((id) => id !== undefined && id !== chrome.tabs.TAB_ID_NONE);
+    await chrome.tabs.remove(idsOfTabsToRemove);
+}
+////////////////////////////////
 chrome.commands.onCommand.addListener(async (command) => {
-    console.log(`Received command`, { command });
+    console.log("Received command", { command });
     if (command === "create-tabGroup")
         await createNewGroup();
+    else if (command === "close-current-tabGroup")
+        await closeCurrentGroup();
     else
         console.error("An unknown command was received", { command });
 });

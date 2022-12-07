@@ -17,6 +17,10 @@
     "create-tabGroup": {
       "suggested_key": "Alt+T",
       "description": "Creates a new tab within a new tabGroup"
+    },
+    "close-current-tabGroup": {
+      "suggested_key": "Alt+W",
+      "description": "Closes the tab group containing the current tab"
     }
   }
 }
