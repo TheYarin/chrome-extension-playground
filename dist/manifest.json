@@ -9,7 +9,7 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "permissions": ["tabs", "tabGroups"],
+  "permissions": ["tabs", "tabGroups", "declarativeNetRequest"],
   "background": {
     "service_worker": "background.js"
   },
@@ -26,5 +26,15 @@
       "suggested_key": "Alt+G",
       "description": "Adds the current tab to a new group if it's not already in one"
     }
-  }
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "fuck-hebrew-aliexpress",
+        "enabled": true,
+        "path": "fuck-hebrew-aliexpress-rule.json"
+      }
+    ]
+  },
+  "host_permissions": ["https://he.aliexpress.com/*"]
 }
