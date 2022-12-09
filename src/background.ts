@@ -79,14 +79,17 @@ async function groupClickedSearchResultTabs(tab: chrome.tabs.Tab) {
   if (openerInTabGroupAlready) {
     await chrome.tabs.group({ groupId: openerTab.groupId, tabIds: [tab.id] });
   } else {
-    const newTabGroupId = await chrome.tabs.group({ tabIds: [tab.id, openerTabId] });
-    const newTabGroupName = searchedText;
-
-    chrome.tabGroups.update(newTabGroupId, { title: newTabGroupName });
+    await addTabsToNewGroup([tab.id, openerTabId], searchedText);
   }
 }
 
 chrome.tabs.onCreated.addListener(groupClickedSearchResultTabs);
+
+async function addTabsToNewGroup(tabIds: number[], newTabGroupName?: string) {
+  const newTabGroupId = await chrome.tabs.group({ tabIds });
+
+  if (newTabGroupName) chrome.tabGroups.update(newTabGroupId, { title: newTabGroupName });
+}
 
 ////////////////////////////////
 
@@ -120,10 +123,22 @@ async function closeCurrentGroup() {
 
 ////////////////////////////////
 
+async function addCurrentTabToNewGroup() {
+  const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (!currentTab || !currentTab.id) return;
+  if (currentTab.groupId && currentTab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) return;
+
+  await addTabsToNewGroup([currentTab.id], currentTab.title);
+}
+
+////////////////////////////////
+
 chrome.commands.onCommand.addListener(async (command) => {
   console.log("Received command", { command });
 
   if (command === "create-tabGroup") await createNewGroup();
   else if (command === "close-current-tabGroup") await closeCurrentGroup();
+  else if (command === "add-current-tab-to-new-group") await addCurrentTabToNewGroup();
   else console.error("An unknown command was received", { command });
 });

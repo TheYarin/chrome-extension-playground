@@ -21,6 +21,10 @@
     "close-current-tabGroup": {
       "suggested_key": "Alt+W",
       "description": "Closes the tab group containing the current tab"
+    },
+    "add-current-tab-to-new-group": {
+      "suggested_key": "Alt+G",
+      "description": "Adds the current tab to a new group if it's not already in one"
     }
   }
 }
