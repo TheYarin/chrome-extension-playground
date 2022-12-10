@@ -18,7 +18,7 @@ function parseUrlByStartAndSearchParam(urlStart, searchParamName, url, loggingCo
 }
 const parseGoogleSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.google.com/search?q=", "q", url, loggingContext);
 const parseYoutubeSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.youtube.com/results?search_query=", "search_query", url, loggingContext);
-const parseAliExpressSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.aliexpress.com/wholesale?", "SearchText", url, loggingContext);
+const parseAliExpressSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.aliexpress.com", "SearchText", url, loggingContext);
 const parseAmazonSearchUrl = (url, loggingContext) => parseUrlByStartAndSearchParam("https://www.amazon.com/s?", "k", url, loggingContext);
 const urlParsers = [parseGoogleSearchUrl, parseYoutubeSearchUrl, parseAliExpressSearchUrl, parseAmazonSearchUrl];
 function tryAllUrlParsers(url, loggingContext) {
