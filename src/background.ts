@@ -134,11 +134,30 @@ async function addCurrentTabToNewGroup() {
 
 ////////////////////////////////
 
+async function addNewTabToCurrentGroup() {
+  const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (!currentTab || !currentTab.id) return;
+  if (!currentTab.groupId || currentTab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) return;
+
+  const newTab = await chrome.tabs.create({});
+
+  if (!newTab.id || newTab.id === chrome.tabs.TAB_ID_NONE) {
+    console.warn("The ID of the newly created tab is invalid, weird!", { tabId: newTab.id, theNewTab: newTab });
+    return;
+  }
+
+  chrome.tabs.group({ groupId: currentTab.groupId, tabIds: [newTab.id] });
+}
+
+////////////////////////////////
+
 chrome.commands.onCommand.addListener(async (command) => {
   console.log("Received command", { command });
 
   if (command === "create-tabGroup") await createNewGroup();
   else if (command === "close-current-tabGroup") await closeCurrentGroup();
   else if (command === "add-current-tab-to-new-group") await addCurrentTabToNewGroup();
+  else if (command === "new-tab-to-current-group") await addNewTabToCurrentGroup();
   else console.error("An unknown command was received", { command });
 });

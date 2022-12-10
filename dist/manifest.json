@@ -25,6 +25,10 @@
     "add-current-tab-to-new-group": {
       "suggested_key": "Alt+G",
       "description": "Adds the current tab to a new group if it's not already in one"
+    },
+    "new-tab-to-current-group": {
+      "suggested_key": "Alt+Shift+T",
+      "description": "Adds a new tab to the current group"
     }
   },
   "declarative_net_request": {
